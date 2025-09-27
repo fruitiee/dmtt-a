@@ -1,0 +1,74 @@
+# Customer Buying Pattern Classification
+# Author: ChatGPT
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# -------------------------
+# 1. Example Dataset
+# -------------------------
+# You can also load from CSV using:
+# data = pd.read_csv("customers.csv")
+
+data = pd.DataFrame({
+    "Age": [22, 25, 47, 52, 46, 56, 55, 60, 18, 23, 45, 57],
+    "Income": [15000, 29000, 48000, 60000, 52000, 72000, 75000, 80000, 12000, 20000, 51000, 70000],
+    "Gender": ["Male", "Female", "Female", "Male", "Female", "Male", "Male", "Female", "Male", "Female", "Male", "Female"],
+    "Buys": ["No", "No", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "No", "No", "Yes", "Yes"]
+})
+
+print("Sample Data:\n", data.head())
+
+# -------------------------
+# 2. Preprocessing
+# -------------------------
+X = data.drop("Buys", axis=1)
+y = data["Buys"]
+
+# Encode categorical variable
+label_enc = LabelEncoder()
+X["Gender"] = label_enc.fit_transform(X["Gender"])  # Male=1, Female=0
+y = label_enc.fit_transform(y)  # Yes=1, No=0
+
+# Feature Scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# -------------------------
+# 3. Train-Test Split
+# -------------------------
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.3, random_state=42
+)
+
+# -------------------------
+# 4. Classification Model
+# -------------------------
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# -------------------------
+# 5. Evaluation
+# -------------------------
+y_pred = model.predict(X_test)
+
+print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# -------------------------
+# 6. Predict on New Customer
+# -------------------------
+new_customer = pd.DataFrame({
+    "Age": [30],
+    "Income": [40000],
+    "Gender": [1]  # 1=Male, 0=Female
+})
+
+new_customer_scaled = scaler.transform(new_customer)
+prediction = model.predict(new_customer_scaled)
+
+print("\nNew Customer Prediction:", "Buys" if prediction[0] == 1 else "Does Not Buy")
